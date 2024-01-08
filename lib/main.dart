@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:myanmar_calendar/data.dart';
+import 'package:myanmar_calendar/models/day.dart';
+import 'package:myanmar_calendar/widgets/fortune_list.dart';
+import 'package:myanmar_calendar/widgets/holiday_list.dart';
 
 void main() => runApp(const MyApp());
 
@@ -25,6 +29,63 @@ class MyCalendar extends StatefulWidget {
 class _MyCalendarState extends State<MyCalendar> {
   DateTime selectedDate = DateTime.now();
   int selectedMonthIndex = DateTime.now().month - 1;
+  int selectedDateIndex = DateTime.now().day;
+
+  List<Day> holidayList = [];
+  List<Day> fortuneTrueList = [];
+  List<Day> fortuneFalseList = [];
+  int indexFullmoonFalse = -1;
+  int indexFullmoonTrue = -1;
+
+  @override
+  void initState() {
+    super.initState();
+    initializeLists();
+  }
+
+  // Method to initialize the lists
+  void initializeLists() {
+    // Initialize lists for each category
+    holidayList = [];
+    fortuneTrueList = [];
+    fortuneFalseList = [];
+
+    // Initialize index for isFullmoon false
+    indexFullmoonFalse = -1;
+
+    // Iterate over dayList and categorize days
+    for (int i = 0; i < month.dayList.length; i++) {
+      Day day = month.dayList[i];
+
+      if (day.holiday != null) {
+        holidayList.add(day);
+      }
+
+      if (day.fortune == true) {
+        fortuneTrueList.add(day);
+      } else if (day.fortune == false) {
+        fortuneFalseList.add(day);
+      }
+
+      // Check for isFullmoon false and update the index
+      if (day.isFullMoon == false && indexFullmoonFalse == -1) {
+        indexFullmoonFalse = i;
+      }
+
+      // Check for isFullmoon true and update the index
+      if (day.isFullMoon == true && indexFullmoonTrue == -1) {
+        indexFullmoonTrue = i;
+      }
+    }
+    print('Index of the day with isFullmoon false: $indexFullmoonFalse');
+    print('Index of the day with isFullmoon true: $indexFullmoonTrue');
+  }
+
+  String getDragonHead() {
+    return selectedDateIndex < (indexFullmoonFalse + 2)
+        ? month.headOne
+        : month.headTwo;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -32,7 +93,11 @@ class _MyCalendarState extends State<MyCalendar> {
       length: 3,
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('Burmese Calendar'),
+          centerTitle: true,
+          title: Text(
+            month.name,
+            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
+          ),
         ),
         body: SingleChildScrollView(
           child: Column(
@@ -40,33 +105,36 @@ class _MyCalendarState extends State<MyCalendar> {
               const SizedBox(height: 24),
               Center(
                 child: Text(
-                  '${getMonthName(selectedMonthIndex + 1)} ${selectedDate.day}',
+                  month.dayList[selectedDateIndex - 1].burmese,
                   style: const TextStyle(
-                      fontSize: 20, fontWeight: FontWeight.bold),
+                      fontSize: 16, fontWeight: FontWeight.bold),
                 ),
               ),
               const SizedBox(height: 32),
               buildCalendar(),
               const SizedBox(height: 24),
-              DropdownButton<int>(
-                value: selectedMonthIndex,
-                items: List.generate(
-                  12,
-                  (index) => DropdownMenuItem<int>(
-                    value: index,
-                    child: Text(getMonthName(index + 1)),
-                  ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    DropdownButton<int>(
+                      value: selectedMonthIndex,
+                      items: List.generate(
+                        12,
+                        (index) => DropdownMenuItem<int>(
+                          value: index,
+                          child: Text(getMonthName(index + 1)),
+                        ),
+                      ),
+                      onChanged: (int? newValue) {
+                        updateCalendarAndLists(newValue);
+                      },
+                      hint: const Text('Select Month'),
+                    ),
+                    Text(getDragonHead()),
+                  ],
                 ),
-                onChanged: (int? newValue) {
-                  setState(() {
-                    selectedMonthIndex = newValue!;
-                    selectedDate = DateTime(selectedDate.year,
-                        selectedMonthIndex + 1, selectedDate.day);
-                  });
-                  print(
-                      'Selected Month: ${getMonthName(selectedMonthIndex + 1)}');
-                },
-                hint: const Text('Select Month'),
               ),
               const SizedBox(height: 24),
               const TabBar(
@@ -76,14 +144,14 @@ class _MyCalendarState extends State<MyCalendar> {
                   Tab(text: 'ရက်ရာဇာ'),
                 ],
               ),
-              const SizedBox(
+              SizedBox(
                 width: double.infinity,
                 height: 180,
                 child: TabBarView(
                   children: [
-                    Icon(Icons.directions_car),
-                    Icon(Icons.directions_transit),
-                    Icon(Icons.directions_bike),
+                    HolidayListWidget(holidayList: holidayList),
+                    FortuneListWidget(fortuneList: fortuneFalseList),
+                    FortuneListWidget(fortuneList: fortuneTrueList)
                   ],
                 ),
               ),
@@ -94,6 +162,20 @@ class _MyCalendarState extends State<MyCalendar> {
     );
   }
 
+  // Method to update the calendar and get lists based on the selected month
+  void updateCalendarAndLists(int? newValue) {
+    setState(() {
+      selectedMonthIndex = newValue!;
+      selectedDate =
+          DateTime(selectedDate.year, selectedMonthIndex + 1, selectedDate.day);
+
+      // Call the method to initialize the lists
+      initializeLists();
+    });
+
+    print('Selected Month: ${getMonthName(selectedMonthIndex + 1)}');
+  }
+
   Widget buildCalendar() {
     DateTime today = DateTime.now();
     DateTime firstDayOfMonth =
@@ -102,7 +184,7 @@ class _MyCalendarState extends State<MyCalendar> {
         DateTime(selectedDate.year, selectedMonthIndex + 2, 0);
 
     int numberOfDays = lastDayOfMonth.day;
-    int startingWeekday = firstDayOfMonth.weekday;
+    int startingWeekday = firstDayOfMonth.weekday % 7;
 
     List<TableRow> calendarRows = [];
 
@@ -173,16 +255,47 @@ class _MyCalendarState extends State<MyCalendar> {
             ),
           );
         } else {
-          weekWidgets.add(Container(color: Colors.red));
+          weekWidgets.add(Container());
         }
       }
 
       calendarRows.add(TableRow(children: weekWidgets));
     }
 
+    List<Widget> first = calendarRows[1].children;
+
+    if ((first[4] is! GestureDetector || first[5] is! GestureDetector)) {
+      List<Widget> first = calendarRows.removeAt(1).children;
+      List<Widget> last = calendarRows.removeLast().children;
+
+      for (int i = 0; i < first.length; i++) {
+        if (last[i] is GestureDetector) {
+          first[i] = last[i];
+        }
+      }
+      calendarRows.insert(1, TableRow(children: first));
+    }
+
+    // List<Widget> first = calendarRows.removeAt(1).children;
+    // print(first);
+
+    // calendarRows.insert(3, TableRow(children: first));
+
     return Table(
+      // children: calendarRows,
       children: calendarRows,
     );
+  }
+
+  String tableRowToString(TableRow row) {
+    List<String> rowContent = row.children.map((widget) {
+      if (widget is Container && widget.child is Text) {
+        return (widget.child as Text).data ?? '';
+      }
+      return '';
+    }).toList();
+
+    return rowContent.join('\t'); // You can adjust the separator as needed
   }
 
   bool isSameMonth(DateTime date1, DateTime date2) {
@@ -192,6 +305,7 @@ class _MyCalendarState extends State<MyCalendar> {
   void onDayTap(int day) {
     setState(() {
       selectedDate = DateTime(selectedDate.year, selectedDate.month, day);
+      selectedDateIndex = day;
     });
     print('Selected date: $selectedDate');
   }
