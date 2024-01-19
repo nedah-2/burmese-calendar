@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "947534421532",
+    "project_id": "burmese-calendar",
+    "storage_bucket": "burmese-calendar.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:947534421532:android:a041441e18cdfaf1d009d9",
+        "android_client_info": {
+          "package_name": "com.example.myanmar_calendar"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA5La_DwHnF99b9T8WxWPnq5jx7IHQaWds"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

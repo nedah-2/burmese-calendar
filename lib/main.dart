@@ -1,10 +1,18 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:myanmar_calendar/data.dart';
+import 'package:myanmar_calendar/firebase_options.dart';
 import 'package:myanmar_calendar/models/day.dart';
 import 'package:myanmar_calendar/widgets/fortune_list.dart';
 import 'package:myanmar_calendar/widgets/holiday_list.dart';
 
-void main() => runApp(const MyApp());
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+  runApp(const MyApp());
+}
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -92,50 +100,132 @@ class _MyCalendarState extends State<MyCalendar> {
     return DefaultTabController(
       length: 3,
       child: Scaffold(
-        appBar: AppBar(
-          centerTitle: true,
-          title: Text(
-            month.name,
-            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
-          ),
-        ),
+        // appBar: AppBar(
+        //   centerTitle: true,
+        //   title: Text(
+        //     month.name,
+        //     style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
+        //   ),
+        // ),
         body: SingleChildScrollView(
           child: Column(
             children: [
-              const SizedBox(height: 24),
-              Center(
-                child: Text(
-                  month.dayList[selectedDateIndex - 1].burmese,
-                  style: const TextStyle(
-                      fontSize: 16, fontWeight: FontWeight.bold),
+              Container(
+                height: 150, // Adjust the height as needed
+                decoration: const BoxDecoration(
+                  image: DecorationImage(
+                    image: AssetImage('assets/background.jpg'),
+                    fit: BoxFit.cover,
+                  ),
+                ),
+                child: Stack(
+                  children: [
+                    Container(
+                      width: double.infinity,
+                      height: double.infinity,
+                      color: Colors.black.withOpacity(0.4),
+                    ),
+                    Column(
+                      children: [
+                        AppBar(
+                          centerTitle: true,
+                          title: Text(
+                            month.name,
+                            style: const TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w500,
+                                color: Colors.white),
+                          ),
+                          backgroundColor: Colors.transparent,
+                          elevation: 0, // Remove shadow
+                        ),
+                        const SizedBox(height: 8),
+                        Center(
+                          child: Text(
+                            month.dayList[selectedDateIndex - 1].burmese,
+                            style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white),
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                      ],
+                    ),
+                  ],
                 ),
               ),
-              const SizedBox(height: 32),
-              buildCalendar(),
               const SizedBox(height: 24),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16.0),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    DropdownButton<int>(
-                      value: selectedMonthIndex,
-                      items: List.generate(
-                        12,
-                        (index) => DropdownMenuItem<int>(
-                          value: index,
-                          child: Text(getMonthName(index + 1)),
+                    IconButton.filled(
+                        onPressed: () {}, icon: const Icon(Icons.chevron_left)),
+                    SizedBox(
+                      width: 120,
+                      child: TextButton(
+                        onPressed: () async {
+                          int? newValue = await showDialog<int>(
+                            context: context,
+                            builder: (BuildContext context) {
+                              return AlertDialog(
+                                insetPadding:
+                                    const EdgeInsets.symmetric(horizontal: 96),
+                                shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(16)),
+                                content: SizedBox(
+                                  width: 120,
+                                  child: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: List.generate(
+                                      12,
+                                      (index) => TextButton(
+                                        onPressed: () =>
+                                            Navigator.pop(context, index),
+                                        child: Center(
+                                            child:
+                                                Text(getMonthName(index + 1))),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              );
+                            },
+                          );
+
+                          if (newValue != null) {
+                            updateCalendarAndLists(newValue);
+                          }
+                        },
+                        style: ButtonStyle(
+                          padding:
+                              MaterialStateProperty.all<EdgeInsetsGeometry>(
+                            const EdgeInsets.symmetric(horizontal: 16),
+                          ),
+                          backgroundColor: MaterialStateProperty.all<Color>(
+                              Colors.deepPurple.shade50),
+                          shape: MaterialStateProperty.all<OutlinedBorder>(
+                            RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8.0),
+                            ),
+                          ),
                         ),
+                        child: Center(
+                            child: Text(getMonthName(selectedMonthIndex + 1))),
                       ),
-                      onChanged: (int? newValue) {
-                        updateCalendarAndLists(newValue);
-                      },
-                      hint: const Text('Select Month'),
                     ),
-                    Text(getDragonHead()),
+
+                    IconButton.filled(
+                        onPressed: () {},
+                        icon: const Icon(Icons.chevron_right)),
+                    // Text(getDragonHead()),
                   ],
                 ),
               ),
+              const SizedBox(height: 24),
+              buildCalendar(),
               const SizedBox(height: 24),
               const TabBar(
                 tabs: [
@@ -228,12 +318,12 @@ class _MyCalendarState extends State<MyCalendar> {
                   shape: BoxShape.circle,
                   color: isSameMonth(currentDate, today)
                       ? isSameDay(today, dayValue)
-                          ? Colors.blue
+                          ? Colors.deepPurple
                           : Colors.transparent
                       : null,
                   border: isSameMonth(currentDate, selectedDate)
                       ? isSameDay(selectedDate, dayValue)
-                          ? Border.all(color: Colors.blue, width: 2.0)
+                          ? Border.all(color: Colors.deepPurple, width: 2.0)
                           : null
                       : null,
                 ),
