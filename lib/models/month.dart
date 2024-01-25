@@ -1,48 +1,45 @@
-import 'package:myanmar_calendar/models/day.dart';
+import 'package:hive/hive.dart';
+import 'day.dart'; // Import your Day model
 
-// month_model.dart
+part 'month.g.dart';
+
+@HiveType(typeId: 0)
 class Month {
+  @HiveField(0)
   final int id;
-  final String name;
+
+  @HiveField(1)
+  final String english;
+
+  @HiveField(2)
+  final String burmese;
+
+  @HiveField(3)
   final String headOne;
+
+  @HiveField(4)
   final String headTwo;
-  final List<Day> dayList;
+
+  @HiveField(5)
+  List<Day> dayList;
 
   Month({
     required this.id,
-    required this.name,
+    required this.english,
+    required this.burmese,
     required this.headOne,
     required this.headTwo,
     required this.dayList,
   });
 
   factory Month.fromJson(Map<String, dynamic> json) {
-    List<Day> days = [];
-    if (json['dayList'] != null) {
-      json['dayList'].forEach((day) {
-        days.add(Day.fromJson(day));
-      });
-    }
-
     return Month(
       id: json['id'],
-      name: json['burmese'],
+      english: json['english'],
+      burmese: json['burmese'],
       headOne: json['headOne'],
       headTwo: json['headTwo'],
-      dayList: days,
+      dayList: [],
     );
-  }
-
-  Map<String, dynamic> toJson() {
-    List<Map<String, dynamic>> daysJson =
-        dayList.map((day) => day.toJson()).toList();
-
-    return {
-      'id': id,
-      'burmese': name,
-      'headOne': headOne,
-      'headTwo': headTwo,
-      'dayList': daysJson,
-    };
   }
 }

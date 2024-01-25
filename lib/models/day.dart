@@ -1,10 +1,25 @@
-// day_model.dart
+import 'package:hive/hive.dart';
+
+part 'day.g.dart';
+
+@HiveType(typeId: 1)
 class Day {
+  @HiveField(0)
   final int id;
+
+  @HiveField(1)
   final String english;
+
+  @HiveField(2)
   final String burmese;
+
+  @HiveField(3)
   final bool? isFullMoon;
+
+  @HiveField(4)
   final String? holiday;
+
+  @HiveField(5)
   final bool? fortune;
 
   Day({
@@ -22,7 +37,7 @@ class Day {
       english: json['english'],
       burmese: json['burmese'],
       isFullMoon: json['isFullMoon'],
-      holiday: json['isHoliday'],
+      holiday: json['holiday'],
       fortune: json['fortune'],
     );
   }
@@ -33,7 +48,7 @@ class Day {
       'english': english,
       'burmese': burmese,
       'isFullMoon': isFullMoon,
-      'isHoliday': holiday,
+      'holiday': holiday,
       'fortune': fortune,
     };
   }
