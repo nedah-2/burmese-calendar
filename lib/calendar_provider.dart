@@ -16,6 +16,7 @@ class CalendarProvider extends ChangeNotifier {
   List<Day> _fortuneFalseList = [];
   int _indexFullmoonFalse = -1;
   int _indexFullmoonTrue = -1;
+  double _dragonHead = 0.0;
 
   List<Month> _months = [];
 
@@ -28,6 +29,7 @@ class CalendarProvider extends ChangeNotifier {
   int get indexFullmoonFalse => _indexFullmoonFalse;
   int get indexFullmoonTrue => _indexFullmoonTrue;
   Month get selectedMonth => _selectedMonth;
+  double get dragonHead => _dragonHead;
 
   List<Month> get months => _months;
 
@@ -39,13 +41,12 @@ class CalendarProvider extends ChangeNotifier {
     _months =
         await database.initCalendar(onLoadingTextChange, onLoadingComplete);
     await changeMonthTo(_selectedMonthIndex);
-    notifyListeners();
   }
 
   // Method to update the calendar and get lists based on the selected month
   Future<void> changeMonthTo(int index) async {
     Month month = _months[index];
-    print(month.english);
+
     List<Day> dayList = month.dayList;
 
     // Reset the lists for each category
@@ -77,6 +78,7 @@ class CalendarProvider extends ChangeNotifier {
         _indexFullmoonTrue = i + 1;
       }
     }
+    print(_indexFullmoonFalse);
 
     // Sort the lists based on the id property
     _holidayList.sort((a, b) => a.id.compareTo(b.id));
@@ -86,13 +88,16 @@ class CalendarProvider extends ChangeNotifier {
     print('Index of the day with isFullmoon false: $_indexFullmoonFalse');
     print('Index of the day with isFullmoon true: $_indexFullmoonTrue');
     _selectedMonth = month;
-
+    _dragonHead = getDirection(getDragonHead(_selectedDateIndex));
+    print(_dragonHead);
     notifyListeners();
   }
 
   void onDayTap(DateTime date) {
     _selectedDate = date;
     _selectedDateIndex = date.day;
+    _dragonHead = getDirection(getDragonHead(_selectedDateIndex));
+    print(_dragonHead);
     notifyListeners();
   }
 
@@ -106,10 +111,22 @@ class CalendarProvider extends ChangeNotifier {
     changeMonthTo(month);
   }
 
-  String getDragonHead() {
-    return _selectedDateIndex < (_indexFullmoonFalse + 1)
+  String getDragonHead(int current) {
+    return current < (_indexFullmoonFalse + 1)
         ? _selectedMonth.headOne
         : _selectedMonth.headTwo;
+  }
+
+  double getDirection(String dragonHead) {
+    if (dragonHead.contains('မြောက်')) {
+      return 0.75;
+    } else if (dragonHead.contains('ရှေ့')) {
+      return 1.0;
+    } else if (dragonHead.contains('တောင်')) {
+      return 0.25;
+    } else {
+      return 0.5;
+    }
   }
 
   // String getMonthName(int month) {

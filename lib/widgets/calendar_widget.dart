@@ -51,19 +51,40 @@ class _MyCalendarState extends State<MyCalendar> {
                             elevation: 0, // Remove shadow
                           ),
                           const SizedBox(height: 8),
-                          Center(
-                            child: Text(
-                              calendar.selectedDateIndex == -1
-                                  ? ''
-                                  : calendar
-                                      .selectedMonth
-                                      .dayList[calendar.selectedDateIndex - 1]
-                                      .burmese,
-                              style: const TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.white),
-                            ),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              AnimatedRotation(
+                                turns: calendar.dragonHead,
+                                duration: const Duration(milliseconds: 300),
+                                child: Container(
+                                  width: 32,
+                                  height: 32,
+                                  decoration: const BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: Colors.deepPurple,
+                                  ),
+                                  child: const Icon(
+                                    Icons.arrow_forward,
+                                    color: Colors.white,
+                                    size: 16,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Text(
+                                calendar.selectedDateIndex == -1
+                                    ? ''
+                                    : calendar
+                                        .selectedMonth
+                                        .dayList[calendar.selectedDateIndex - 1]
+                                        .burmese,
+                                style: const TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white),
+                              ),
+                            ],
                           ),
                           const SizedBox(height: 8),
                         ],
@@ -226,37 +247,69 @@ class _MyCalendarState extends State<MyCalendar> {
               onTap: () {
                 calendar.onDayTap(currentDate);
               },
-              child: Container(
-                width: 40,
-                height: 40,
-                alignment: Alignment.center,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: isSameMonth(currentDate, today)
-                      ? isSameDay(today, dayValue)
-                          ? Colors.deepPurple
-                          : Colors.transparent
-                      : null,
-                  border: isSameMonth(currentDate, calendar.selectedDate)
-                      ? isSameDay(calendar.selectedDate, dayValue)
-                          ? Border.all(color: Colors.deepPurple, width: 2.0)
-                          : null
-                      : null,
-                ),
-                child: Text(
-                  '$dayValue',
-                  style: TextStyle(
-                    color: isSameMonth(currentDate, today)
-                        ? isSameDay(today, dayValue)
-                            ? Colors.white
-                            : Colors.black87
-                        : isSameMonth(currentDate, calendar.selectedDate)
-                            ? isSameDay(calendar.selectedDate, dayValue)
-                                ? Colors.deepPurple
+              child: Stack(
+                children: [
+                  Container(
+                    width: 40,
+                    height: 40,
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: isSameMonth(currentDate, today)
+                          ? isSameDay(today, dayValue)
+                              ? Colors.deepPurple
+                              : Colors.transparent
+                          : null,
+                      border: isSameMonth(currentDate, calendar.selectedDate)
+                          ? isSameDay(calendar.selectedDate, dayValue)
+                              ? Border.all(color: Colors.deepPurple, width: 2.0)
+                              : null
+                          : null,
+                    ),
+                    child: Text(
+                      '$dayValue',
+                      style: TextStyle(
+                        color: isSameMonth(currentDate, today)
+                            ? isSameDay(today, dayValue)
+                                ? Colors.white
                                 : Colors.black87
-                            : Colors.black87,
+                            : isSameMonth(currentDate, calendar.selectedDate)
+                                ? isSameDay(calendar.selectedDate, dayValue)
+                                    ? Colors.deepPurple
+                                    : Colors.black87
+                                : Colors.black87,
+                      ),
+                    ),
                   ),
-                ),
+                  if (dayValue == calendar.indexFullmoonFalse &&
+                      dayValue != calendar.selectedDateIndex)
+                    Positioned(
+                      top: 30,
+                      right: 29,
+                      child: Container(
+                        width: 5,
+                        height: 5,
+                        decoration: const BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Colors.black,
+                        ),
+                      ),
+                    ),
+                  if (dayValue == calendar.indexFullmoonTrue &&
+                      dayValue != calendar.selectedDateIndex)
+                    Positioned(
+                      top: 30,
+                      right: 29,
+                      child: Container(
+                        width: 5,
+                        height: 5,
+                        decoration: const BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Colors.red,
+                        ),
+                      ),
+                    ),
+                ],
               ),
             ),
           );
