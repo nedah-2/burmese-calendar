@@ -14,9 +14,10 @@ class CalendarProvider extends ChangeNotifier {
   List<Day> _holidayList = [];
   List<Day> _fortuneTrueList = [];
   List<Day> _fortuneFalseList = [];
-  int _indexFullmoonFalse = -1;
-  int _indexFullmoonTrue = -1;
-  double _dragonHead = 0.0;
+  List<int> _indexFullmoonFalse = [];
+  List<int> _indexFullmoonTrue = [];
+  double _turns = 0.0;
+  String _dragonHead = '';
 
   List<Month> _months = [];
 
@@ -26,10 +27,11 @@ class CalendarProvider extends ChangeNotifier {
   List<Day> get holidayList => _holidayList;
   List<Day> get fortuneTrueList => _fortuneTrueList;
   List<Day> get fortuneFalseList => _fortuneFalseList;
-  int get indexFullmoonFalse => _indexFullmoonFalse;
-  int get indexFullmoonTrue => _indexFullmoonTrue;
+  List<int> get indexFullmoonFalse => _indexFullmoonFalse;
+  List<int> get indexFullmoonTrue => _indexFullmoonTrue;
   Month get selectedMonth => _selectedMonth;
-  double get dragonHead => _dragonHead;
+  double get turns => _turns;
+  String get dragonHead => _dragonHead;
 
   List<Month> get months => _months;
 
@@ -53,6 +55,8 @@ class CalendarProvider extends ChangeNotifier {
     _holidayList = [];
     _fortuneTrueList = [];
     _fortuneFalseList = [];
+    _indexFullmoonFalse = [];
+    _indexFullmoonTrue = [];
 
     // Iterate over dayList and categorize days
     for (int i = 0; i < dayList.length; i++) {
@@ -70,12 +74,12 @@ class CalendarProvider extends ChangeNotifier {
 
       // Check for isFullmoon false and update the index
       if (day.isFullMoon == false) {
-        _indexFullmoonFalse = i + 1;
+        _indexFullmoonFalse.add(i + 1);
       }
 
       // Check for isFullmoon true and update the index
       if (day.isFullMoon == true) {
-        _indexFullmoonTrue = i + 1;
+        _indexFullmoonTrue.add(i + 1);
       }
     }
     print(_indexFullmoonFalse);
@@ -84,20 +88,24 @@ class CalendarProvider extends ChangeNotifier {
     _holidayList.sort((a, b) => a.id.compareTo(b.id));
     _fortuneTrueList.sort((a, b) => a.id.compareTo(b.id));
     _fortuneFalseList.sort((a, b) => a.id.compareTo(b.id));
+    _indexFullmoonFalse.sort();
+    _indexFullmoonTrue.sort();
 
     print('Index of the day with isFullmoon false: $_indexFullmoonFalse');
     print('Index of the day with isFullmoon true: $_indexFullmoonTrue');
     _selectedMonth = month;
-    _dragonHead = getDirection(getDragonHead(_selectedDateIndex));
-    print(_dragonHead);
+    _dragonHead = getDragonHead(_selectedDateIndex);
+    _turns = getDirection(_dragonHead);
+    print(_turns);
     notifyListeners();
   }
 
   void onDayTap(DateTime date) {
     _selectedDate = date;
     _selectedDateIndex = date.day;
-    _dragonHead = getDirection(getDragonHead(_selectedDateIndex));
-    print(_dragonHead);
+    _dragonHead = getDragonHead(_selectedDateIndex);
+    _turns = getDirection(_dragonHead);
+    print(_turns);
     notifyListeners();
   }
 
@@ -112,7 +120,7 @@ class CalendarProvider extends ChangeNotifier {
   }
 
   String getDragonHead(int current) {
-    return current < (_indexFullmoonFalse + 1)
+    return _selectedDateIndex < (_indexFullmoonFalse[0] + 1)
         ? _selectedMonth.headOne
         : _selectedMonth.headTwo;
   }
@@ -128,35 +136,4 @@ class CalendarProvider extends ChangeNotifier {
       return 0.5;
     }
   }
-
-  // String getMonthName(int month) {
-  //   switch (month) {
-  //     case 1:
-  //       return 'January';
-  //     case 2:
-  //       return 'February';
-  //     case 3:
-  //       return 'March';
-  //     case 4:
-  //       return 'April';
-  //     case 5:
-  //       return 'May';
-  //     case 6:
-  //       return 'June';
-  //     case 7:
-  //       return 'July';
-  //     case 8:
-  //       return 'August';
-  //     case 9:
-  //       return 'September';
-  //     case 10:
-  //       return 'October';
-  //     case 11:
-  //       return 'November';
-  //     case 12:
-  //       return 'December';
-  //     default:
-  //       return '';
-  //   }
-  // }
 }

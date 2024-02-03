@@ -19,10 +19,13 @@ class _MyCalendarState extends State<MyCalendar> {
         length: 3,
         child: Scaffold(
           body: SingleChildScrollView(
+            physics: const NeverScrollableScrollPhysics(),
             child: Column(
               children: [
                 Container(
-                  height: 150, // Adjust the height as needed
+                  height: MediaQuery.of(context).size.height *
+                      0.25, // Adjust the height as needed
+
                   decoration: const BoxDecoration(
                     image: DecorationImage(
                       image: AssetImage('assets/background.jpg'),
@@ -40,13 +43,26 @@ class _MyCalendarState extends State<MyCalendar> {
                         children: [
                           AppBar(
                             centerTitle: true,
-                            title: Text(
-                              calendar.selectedMonth.burmese,
-                              style: const TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.w500,
-                                  color: Colors.white),
+                            title: AnimatedSwitcher(
+                              duration: const Duration(milliseconds: 800),
+                              child: Text(
+                                calendar.selectedMonth.burmese,
+                                key: ValueKey<String>(
+                                    calendar.selectedMonth.burmese),
+                                style: const TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white),
+                              ),
+                              transitionBuilder:
+                                  (Widget child, Animation<double> animation) {
+                                return ScaleTransition(
+                                  scale: animation,
+                                  child: child,
+                                );
+                              },
                             ),
+
                             backgroundColor: Colors.transparent,
                             elevation: 0, // Remove shadow
                           ),
@@ -54,39 +70,63 @@ class _MyCalendarState extends State<MyCalendar> {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              AnimatedRotation(
-                                turns: calendar.dragonHead,
-                                duration: const Duration(milliseconds: 300),
-                                child: Container(
-                                  width: 32,
-                                  height: 32,
-                                  decoration: const BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    color: Colors.deepPurple,
-                                  ),
-                                  child: const Icon(
-                                    Icons.arrow_forward,
-                                    color: Colors.white,
-                                    size: 16,
+                              Tooltip(
+                                message: calendar.dragonHead,
+                                triggerMode: TooltipTriggerMode.tap,
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 16, vertical: 8),
+                                child: AnimatedRotation(
+                                  turns: calendar.turns,
+                                  duration: const Duration(milliseconds: 500),
+                                  child: Container(
+                                    width: 32,
+                                    height: 32,
+                                    decoration: const BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      color: Colors.deepPurple,
+                                    ),
+                                    child: const Icon(
+                                      Icons.arrow_forward,
+                                      color: Colors.white,
+                                      size: 16,
+                                    ),
                                   ),
                                 ),
                               ),
                               const SizedBox(width: 8),
                               Text(
-                                calendar.selectedDateIndex == -1
-                                    ? ''
-                                    : calendar
-                                        .selectedMonth
-                                        .dayList[calendar.selectedDateIndex - 1]
-                                        .burmese,
+                                calendar.dragonHead,
                                 style: const TextStyle(
                                     fontSize: 16,
-                                    fontWeight: FontWeight.bold,
+                                    fontWeight: FontWeight.normal,
                                     color: Colors.white),
                               ),
                             ],
                           ),
-                          const SizedBox(height: 8),
+                          const SizedBox(height: 12),
+                          AnimatedSwitcher(
+                            duration: const Duration(milliseconds: 800),
+                            transitionBuilder:
+                                (Widget child, Animation<double> animation) {
+                              return ScaleTransition(
+                                scale: animation,
+                                child: child,
+                              );
+                            },
+                            child: Text(
+                              key: ValueKey<int>(calendar.selectedDateIndex),
+                              calendar.selectedDateIndex == -1
+                                  ? ''
+                                  : calendar
+                                      .selectedMonth
+                                      .dayList[calendar.selectedDateIndex - 1]
+                                      .burmese,
+                              style: const TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.normal,
+                                  color: Colors.white),
+                            ),
+                          ),
                         ],
                       ),
                     ],
@@ -188,12 +228,27 @@ class _MyCalendarState extends State<MyCalendar> {
                 SizedBox(
                   width: double.infinity,
                   height: 180,
-                  child: TabBarView(
-                    children: [
-                      HolidayListWidget(holidayList: calendar.holidayList),
-                      FortuneListWidget(fortuneList: calendar.fortuneFalseList),
-                      FortuneListWidget(fortuneList: calendar.fortuneTrueList)
-                    ],
+                  child: AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 700),
+                    transitionBuilder:
+                        (Widget child, Animation<double> animation) {
+                      return SlideTransition(
+                        position: Tween<Offset>(
+                          begin: const Offset(0.0, 1.0),
+                          end: Offset.zero,
+                        ).animate(animation),
+                        child: child,
+                      );
+                    },
+                    child: TabBarView(
+                      key: ValueKey<int>(calendar.selectedMonthIndex),
+                      children: [
+                        HolidayListWidget(holidayList: calendar.holidayList),
+                        FortuneListWidget(
+                            fortuneList: calendar.fortuneFalseList),
+                        FortuneListWidget(fortuneList: calendar.fortuneTrueList)
+                      ],
+                    ),
                   ),
                 ),
               ],
@@ -281,34 +336,36 @@ class _MyCalendarState extends State<MyCalendar> {
                       ),
                     ),
                   ),
-                  if (dayValue == calendar.indexFullmoonFalse &&
-                      dayValue != calendar.selectedDateIndex)
-                    Positioned(
-                      top: 30,
-                      right: 29,
-                      child: Container(
-                        width: 5,
-                        height: 5,
-                        decoration: const BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: Colors.black,
+                  for (int i = 0; i < calendar.indexFullmoonFalse.length; i++)
+                    if (dayValue == calendar.indexFullmoonFalse[i] &&
+                        dayValue != calendar.selectedDateIndex)
+                      Positioned(
+                        top: 30,
+                        right: 29,
+                        child: Container(
+                          width: 5,
+                          height: 5,
+                          decoration: const BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: Colors.black,
+                          ),
                         ),
                       ),
-                    ),
-                  if (dayValue == calendar.indexFullmoonTrue &&
-                      dayValue != calendar.selectedDateIndex)
-                    Positioned(
-                      top: 30,
-                      right: 29,
-                      child: Container(
-                        width: 5,
-                        height: 5,
-                        decoration: const BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: Colors.red,
+                  for (int i = 0; i < calendar.indexFullmoonTrue.length; i++)
+                    if (dayValue == calendar.indexFullmoonTrue[i] &&
+                        dayValue != calendar.selectedDateIndex)
+                      Positioned(
+                        top: 30,
+                        right: 29,
+                        child: Container(
+                          width: 5,
+                          height: 5,
+                          decoration: const BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: Colors.red,
+                          ),
                         ),
                       ),
-                    ),
                 ],
               ),
             ),
@@ -335,8 +392,22 @@ class _MyCalendarState extends State<MyCalendar> {
       calendarRows.insert(1, TableRow(children: first));
     }
 
-    return Table(
-      children: calendarRows,
+    return AnimatedSwitcher(
+      duration: const Duration(milliseconds: 800),
+      transitionBuilder: (Widget child, Animation<double> animation) {
+        return FadeTransition(
+          opacity: animation,
+          // position: Tween<Offset>(
+          //   begin: const Offset(1.0, 0.0),
+          //   end: Offset.zero,
+          // ).animate(animation),
+          child: child,
+        );
+      },
+      child: Table(
+        key: ValueKey<int>(calendar.selectedMonthIndex),
+        children: calendarRows,
+      ),
     );
   }
 
