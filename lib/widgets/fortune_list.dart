@@ -9,7 +9,7 @@ class FortuneListWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListView.builder(
-      padding: const EdgeInsets.symmetric(vertical: 16),
+      padding: const EdgeInsets.only(top: 16, bottom: 40),
       itemCount: fortuneList.length,
       shrinkWrap: true,
       itemBuilder: (context, index) {

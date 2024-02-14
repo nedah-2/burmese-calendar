@@ -1,3 +1,4 @@
+import 'package:connectivity/connectivity.dart';
 import 'package:hive/hive.dart';
 import 'package:myanmar_calendar/services/firestore_service.dart';
 import 'package:myanmar_calendar/models/day.dart';
@@ -14,35 +15,63 @@ class DatabaseHelper {
     final appDocumentDirectory =
         await path_provider.getApplicationDocumentsDirectory();
     Hive.init(appDocumentDirectory.path);
-    Hive.registerAdapter(MonthAdapter());
-    Hive.registerAdapter(DayAdapter());
-    _monthBox = await Hive.openBox<Month>('monthBox');
+    if (!Hive.isAdapterRegistered(0)) {
+      Hive.registerAdapter(MonthAdapter());
+    }
+    if (!Hive.isAdapterRegistered(1)) {
+      Hive.registerAdapter(DayAdapter());
+    }
 
+    _monthBox = await Hive.openBox<Month>('monthBox');
     // Initialize shared preferences
     _prefs = await SharedPreferences.getInstance();
   }
 
+  Future<bool> isInternetConnected() async {
+    var connectivityResult = await Connectivity().checkConnectivity();
+    return connectivityResult != ConnectivityResult.none;
+  }
+
   Future<List<Month>> initCalendar(
       Function onLoadingTextChange, Function onLoadingComplete) async {
-    final int lastWriteYear = await getMonthLastWriteTimestamp();
+    _prefs = await SharedPreferences.getInstance();
+    final int index = _prefs.getInt('index') ?? 0;
+    final int lastWriteYear = await getLastWriteTimestamp();
     final int currentYear = DateTime.now().year;
     List<Month> months = [];
-    if (lastWriteYear != currentYear) {
-      print("Initialize Calendar");
-      months = await calendarService.fetchMonths();
-      for (int i = 0; i < months.length; i++) {
-        Month month = months[i];
-        onLoadingTextChange("Fetching data for ${month.english}");
-        month.dayList = await calendarService.fetchDayList(month.english);
-        storeMonth(i, month);
+    bool isConnected = await isInternetConnected();
+    if (isConnected) {
+      if (index != 11 || lastWriteYear != currentYear) {
+        months = await calendarService.fetchMonths();
+        for (int i = index; i < months.length; i++) {
+          bool hasInternet = await isInternetConnected();
+          _prefs.setInt('index', i);
+          if (!hasInternet) return [];
+          Month month = months[i];
+
+          onLoadingTextChange("Fetching data for ${month.english}");
+          month.dayList = await calendarService.fetchDayList(month.english);
+          storeMonth(i, month);
+        }
+        // Store year of write operation
+        await _storeTimestamp('last_write');
+        months = await fetchStoredMonths();
+      } else {
+        months = await fetchStoredMonths();
       }
-      // Store year of write operation
-      await _storeTimestamp('last_write');
+      onLoadingComplete();
     } else {
-      print("Load Calendar");
       months = await fetchStoredMonths();
+      if (months.length == 12) {
+        onLoadingComplete();
+      } else {
+        onLoadingTextChange(
+            "Check your internet contenction\n and try again...");
+      }
     }
-    onLoadingComplete();
+
+    print(months.length);
+
     return months;
   }
 
@@ -55,7 +84,7 @@ class DatabaseHelper {
     return storedMonths;
   }
 
-  Future<int> getMonthLastWriteTimestamp() async {
+  Future<int> getLastWriteTimestamp() async {
     return _prefs.getInt('last_write') ?? 0;
   }
 

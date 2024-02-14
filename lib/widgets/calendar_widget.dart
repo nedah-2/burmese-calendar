@@ -1,17 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:myanmar_calendar/calendar_provider.dart';
+import 'package:myanmar_calendar/utils/extract_text.dart';
+import 'package:myanmar_calendar/utils/get_image.dart';
 import 'package:myanmar_calendar/widgets/fortune_list.dart';
 import 'package:myanmar_calendar/widgets/holiday_list.dart';
 import 'package:provider/provider.dart';
 
-class MyCalendar extends StatefulWidget {
+class MyCalendar extends StatelessWidget {
   const MyCalendar({super.key});
 
-  @override
-  State<MyCalendar> createState() => _MyCalendarState();
-}
-
-class _MyCalendarState extends State<MyCalendar> {
   @override
   Widget build(BuildContext context) {
     return Consumer<CalendarProvider>(builder: (context, calendar, child) {
@@ -22,201 +19,21 @@ class _MyCalendarState extends State<MyCalendar> {
             physics: const NeverScrollableScrollPhysics(),
             child: Column(
               children: [
-                Container(
-                  height: MediaQuery.of(context).size.height *
-                      0.25, // Adjust the height as needed
-
-                  decoration: const BoxDecoration(
-                    image: DecorationImage(
-                      image: AssetImage('assets/background.jpg'),
-                      fit: BoxFit.cover,
-                    ),
-                  ),
-                  child: Stack(
-                    children: [
-                      Container(
-                        width: double.infinity,
-                        height: double.infinity,
-                        color: Colors.black.withOpacity(0.4),
-                      ),
-                      Column(
-                        children: [
-                          AppBar(
-                            centerTitle: true,
-                            title: AnimatedSwitcher(
-                              duration: const Duration(milliseconds: 800),
-                              child: Text(
-                                calendar.selectedMonth.burmese,
-                                key: ValueKey<String>(
-                                    calendar.selectedMonth.burmese),
-                                style: const TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.white),
-                              ),
-                              transitionBuilder:
-                                  (Widget child, Animation<double> animation) {
-                                return ScaleTransition(
-                                  scale: animation,
-                                  child: child,
-                                );
-                              },
-                            ),
-
-                            backgroundColor: Colors.transparent,
-                            elevation: 0, // Remove shadow
-                          ),
-                          const SizedBox(height: 8),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Tooltip(
-                                message: calendar.dragonHead,
-                                triggerMode: TooltipTriggerMode.tap,
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 16, vertical: 8),
-                                child: AnimatedRotation(
-                                  turns: calendar.turns,
-                                  duration: const Duration(milliseconds: 500),
-                                  child: Container(
-                                    width: 32,
-                                    height: 32,
-                                    decoration: const BoxDecoration(
-                                      shape: BoxShape.circle,
-                                      color: Colors.deepPurple,
-                                    ),
-                                    child: const Icon(
-                                      Icons.arrow_forward,
-                                      color: Colors.white,
-                                      size: 16,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(width: 8),
-                              Text(
-                                calendar.dragonHead,
-                                style: const TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.normal,
-                                    color: Colors.white),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 12),
-                          AnimatedSwitcher(
-                            duration: const Duration(milliseconds: 800),
-                            transitionBuilder:
-                                (Widget child, Animation<double> animation) {
-                              return ScaleTransition(
-                                scale: animation,
-                                child: child,
-                              );
-                            },
-                            child: Text(
-                              key: ValueKey<int>(calendar.selectedDateIndex),
-                              calendar.selectedDateIndex == -1
-                                  ? ''
-                                  : calendar
-                                      .selectedMonth
-                                      .dayList[calendar.selectedDateIndex - 1]
-                                      .burmese,
-                              style: const TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.normal,
-                                  color: Colors.white),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
+                _buildHeader(context, calendar),
                 const SizedBox(height: 24),
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16.0),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      IconButton.filled(
-                          onPressed: calendar.selectedMonthIndex > 0
-                              ? () {
-                                  calendar.onMonthTap(
-                                      calendar.selectedMonthIndex - 1);
-                                }
-                              : null,
-                          icon: const Icon(Icons.chevron_left)),
-                      SizedBox(
-                        width: 120,
-                        child: TextButton(
-                          onPressed: () async {
-                            int? newValue = await showDialog<int>(
-                              context: context,
-                              builder: (BuildContext context) {
-                                return AlertDialog(
-                                  insetPadding: const EdgeInsets.symmetric(
-                                      horizontal: 96),
-                                  shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(16)),
-                                  content: SizedBox(
-                                    width: 120,
-                                    child: Column(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: List.generate(
-                                        12,
-                                        (index) => TextButton(
-                                          onPressed: () =>
-                                              Navigator.pop(context, index),
-                                          child: Center(
-                                              child: Text(calendar
-                                                  .months[index].english)),
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                );
-                              },
-                            );
-
-                            if (newValue != null) {
-                              calendar.onMonthTap(newValue);
-                            }
-                          },
-                          style: ButtonStyle(
-                            padding:
-                                MaterialStateProperty.all<EdgeInsetsGeometry>(
-                              const EdgeInsets.symmetric(horizontal: 16),
-                            ),
-                            backgroundColor: MaterialStateProperty.all<Color>(
-                                Colors.deepPurple),
-                            shape: MaterialStateProperty.all<OutlinedBorder>(
-                              RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(40.0),
-                              ),
-                            ),
-                          ),
-                          child: Center(
-                              child: Text(
-                            calendar.selectedMonth.english,
-                            style: const TextStyle(color: Colors.white),
-                          )),
-                        ),
-                      ),
-
-                      IconButton.filled(
-                          onPressed: calendar.selectedMonthIndex < 11
-                              ? () {
-                                  calendar.onMonthTap(
-                                      calendar.selectedMonthIndex + 1);
-                                }
-                              : null,
-                          icon: const Icon(Icons.chevron_right)),
-                      // Text(getDragonHead()),
+                      _buildBackButton(calendar),
+                      _buildMonthSelector(context, calendar),
+                      _buildForwardButton(calendar),
                     ],
                   ),
                 ),
                 const SizedBox(height: 24),
-                buildCalendar(calendar),
+                _buildCalendar(calendar),
                 const SizedBox(height: 24),
                 const TabBar(
                   tabs: [
@@ -225,32 +42,7 @@ class _MyCalendarState extends State<MyCalendar> {
                     Tab(text: 'ရက်ရာဇာ'),
                   ],
                 ),
-                SizedBox(
-                  width: double.infinity,
-                  height: 180,
-                  child: AnimatedSwitcher(
-                    duration: const Duration(milliseconds: 700),
-                    transitionBuilder:
-                        (Widget child, Animation<double> animation) {
-                      return SlideTransition(
-                        position: Tween<Offset>(
-                          begin: const Offset(0.0, 1.0),
-                          end: Offset.zero,
-                        ).animate(animation),
-                        child: child,
-                      );
-                    },
-                    child: TabBarView(
-                      key: ValueKey<int>(calendar.selectedMonthIndex),
-                      children: [
-                        HolidayListWidget(holidayList: calendar.holidayList),
-                        FortuneListWidget(
-                            fortuneList: calendar.fortuneFalseList),
-                        FortuneListWidget(fortuneList: calendar.fortuneTrueList)
-                      ],
-                    ),
-                  ),
-                ),
+                _buildTabBarView(calendar),
               ],
             ),
           ),
@@ -259,7 +51,191 @@ class _MyCalendarState extends State<MyCalendar> {
     });
   }
 
-  Widget buildCalendar(CalendarProvider calendar) {
+  IconButton _buildForwardButton(CalendarProvider calendar) {
+    return IconButton.filled(
+        onPressed: calendar.selectedMonthIndex < 11
+            ? () {
+                calendar.onMonthTap(calendar.selectedMonthIndex + 1);
+              }
+            : null,
+        icon: const Icon(Icons.chevron_right));
+  }
+
+  IconButton _buildBackButton(CalendarProvider calendar) {
+    return IconButton.filled(
+        onPressed: calendar.selectedMonthIndex > 0
+            ? () {
+                calendar.onMonthTap(calendar.selectedMonthIndex - 1);
+              }
+            : null,
+        icon: const Icon(Icons.chevron_left));
+  }
+
+  // Helper method to build the header of the calendar
+  Widget _buildHeader(BuildContext context, CalendarProvider calendar) {
+    return Container(
+      height: MediaQuery.of(context).size.height * 0.25,
+      decoration: BoxDecoration(
+        image: DecorationImage(
+          image: AssetImage(getBackgroundImage(calendar.selectedMonth.english)),
+          fit: BoxFit.cover,
+        ),
+      ),
+      child: Stack(
+        children: [
+          Container(
+            width: double.infinity,
+            height: double.infinity,
+            color: Colors.black.withOpacity(0.4),
+          ),
+          Column(
+            children: [
+              AppBar(
+                centerTitle: true,
+                title: AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 800),
+                  child: Text(
+                    calendar.selectedMonth.burmese,
+                    key: ValueKey<String>(calendar.selectedMonth.burmese),
+                    style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white),
+                  ),
+                  transitionBuilder:
+                      (Widget child, Animation<double> animation) {
+                    return ScaleTransition(
+                      scale: animation,
+                      child: child,
+                    );
+                  },
+                ),
+                backgroundColor: Colors.transparent,
+                elevation: 0,
+              ),
+              const SizedBox(height: 8),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Tooltip(
+                    message: calendar.dragonHead,
+                    triggerMode: TooltipTriggerMode.tap,
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    child: AnimatedRotation(
+                      turns: calendar.turns,
+                      duration: const Duration(milliseconds: 500),
+                      child: Container(
+                        width: 32,
+                        height: 32,
+                        decoration: const BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Colors.deepPurple,
+                        ),
+                        child: const Icon(
+                          Icons.arrow_forward,
+                          color: Colors.white,
+                          size: 16,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Text(
+                    extractDirection(calendar.dragonHead),
+                    style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.normal,
+                        color: Colors.white),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              AnimatedSwitcher(
+                duration: const Duration(milliseconds: 600),
+                transitionBuilder: (Widget child, Animation<double> animation) {
+                  return ScaleTransition(
+                    scale: animation,
+                    child: child,
+                  );
+                },
+                child: Text(
+                  key: ValueKey<int>(calendar.selectedDateIndex),
+                  calendar.selectedDateIndex == -1
+                      ? ''
+                      : calendar.selectedMonth
+                          .dayList[calendar.selectedDateIndex - 1].burmese,
+                  style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.normal,
+                      color: Colors.white),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Helper method to build the month selector widget
+  Widget _buildMonthSelector(BuildContext context, CalendarProvider calendar) {
+    return SizedBox(
+      width: 120,
+      child: TextButton(
+        onPressed: () async {
+          int? newValue = await showDialog<int>(
+            context: context,
+            builder: (BuildContext context) {
+              return AlertDialog(
+                insetPadding: const EdgeInsets.symmetric(horizontal: 96),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16)),
+                content: SizedBox(
+                  width: 120,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: List.generate(
+                      12,
+                      (index) => TextButton(
+                        onPressed: () => Navigator.pop(context, index),
+                        child:
+                            Center(child: Text(calendar.months[index].english)),
+                      ),
+                    ),
+                  ),
+                ),
+              );
+            },
+          );
+
+          if (newValue != null) {
+            calendar.onMonthTap(newValue);
+          }
+        },
+        style: ButtonStyle(
+          padding: MaterialStateProperty.all<EdgeInsetsGeometry>(
+            const EdgeInsets.symmetric(horizontal: 16),
+          ),
+          backgroundColor: MaterialStateProperty.all<Color>(Colors.deepPurple),
+          shape: MaterialStateProperty.all<OutlinedBorder>(
+            RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(40.0),
+            ),
+          ),
+        ),
+        child: Center(
+          child: Text(
+            calendar.selectedMonth.english,
+            style: const TextStyle(color: Colors.white),
+          ),
+        ),
+      ),
+    );
+  }
+
+  // Helper method to build the calendar
+  Widget _buildCalendar(CalendarProvider calendar) {
     DateTime today = DateTime.now();
     int year = calendar.selectedDate.year;
     int month = calendar.selectedMonthIndex + 1;
@@ -439,5 +415,33 @@ class _MyCalendarState extends State<MyCalendar> {
   bool isSameDay(DateTime date, int day) {
     // Check if the given day is the same as the selected day
     return date.day == day;
+  }
+
+  // Helper method to build the TabBarView
+  Widget _buildTabBarView(CalendarProvider calendar) {
+    return SizedBox(
+      width: double.infinity,
+      height: 180,
+      child: AnimatedSwitcher(
+        duration: const Duration(milliseconds: 700),
+        transitionBuilder: (Widget child, Animation<double> animation) {
+          return SlideTransition(
+            position: Tween<Offset>(
+              begin: const Offset(0.0, 1.0),
+              end: Offset.zero,
+            ).animate(animation),
+            child: child,
+          );
+        },
+        child: TabBarView(
+          key: ValueKey<int>(calendar.selectedMonthIndex),
+          children: [
+            HolidayListWidget(holidayList: calendar.holidayList),
+            FortuneListWidget(fortuneList: calendar.fortuneFalseList),
+            FortuneListWidget(fortuneList: calendar.fortuneTrueList)
+          ],
+        ),
+      ),
+    );
   }
 }

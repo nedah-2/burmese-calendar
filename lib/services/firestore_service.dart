@@ -24,7 +24,6 @@ class CalendarService {
 
       return months;
     } catch (e) {
-      print("Error fetching months: $e");
       return [];
     }
   }
@@ -46,7 +45,6 @@ class CalendarService {
 
       return dayList;
     } catch (e) {
-      print("Error fetching dayList: $e");
       return [];
     }
   }

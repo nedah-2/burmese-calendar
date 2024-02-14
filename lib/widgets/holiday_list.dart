@@ -13,7 +13,7 @@ class HolidayListWidget extends StatelessWidget {
             child: Text("အားလပ်ရက်မရှိပါ"),
           )
         : ListView.builder(
-            padding: const EdgeInsets.symmetric(vertical: 16),
+            padding: const EdgeInsets.only(top: 16, bottom: 40),
             itemCount: holidayList.length,
             shrinkWrap: true,
             itemBuilder: (context, index) {

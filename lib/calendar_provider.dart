@@ -37,12 +37,28 @@ class CalendarProvider extends ChangeNotifier {
 
   final DatabaseHelper database = DatabaseHelper();
 
-  Future<void> initCalendar(
+  Future<bool> initCalendar(
       Function onLoadingTextChange, Function onLoadingComplete) async {
     await database.initHive();
     _months =
         await database.initCalendar(onLoadingTextChange, onLoadingComplete);
-    await changeMonthTo(_selectedMonthIndex);
+    if (_months.length == 12) {
+      await changeMonthTo(_selectedMonthIndex);
+
+      return true;
+    }
+    return false;
+  }
+
+  Future<bool> fetchData(
+      Function onLoadingTextChange, Function onLoadingComplete) async {
+    _months =
+        await database.initCalendar(onLoadingTextChange, onLoadingComplete);
+    if (_months.isNotEmpty) {
+      await changeMonthTo(_selectedMonthIndex);
+      return true;
+    }
+    return false;
   }
 
   // Method to update the calendar and get lists based on the selected month
@@ -61,7 +77,7 @@ class CalendarProvider extends ChangeNotifier {
     // Iterate over dayList and categorize days
     for (int i = 0; i < dayList.length; i++) {
       Day day = dayList[i];
-      print(day.burmese);
+
       if (day.holiday != null) {
         _holidayList.add(day);
       }
@@ -82,7 +98,6 @@ class CalendarProvider extends ChangeNotifier {
         _indexFullmoonTrue.add(i + 1);
       }
     }
-    print(_indexFullmoonFalse);
 
     // Sort the lists based on the id property
     _holidayList.sort((a, b) => a.id.compareTo(b.id));
@@ -91,12 +106,10 @@ class CalendarProvider extends ChangeNotifier {
     _indexFullmoonFalse.sort();
     _indexFullmoonTrue.sort();
 
-    print('Index of the day with isFullmoon false: $_indexFullmoonFalse');
-    print('Index of the day with isFullmoon true: $_indexFullmoonTrue');
     _selectedMonth = month;
     _dragonHead = getDragonHead(_selectedDateIndex);
     _turns = getDirection(_dragonHead);
-    print(_turns);
+
     notifyListeners();
   }
 
@@ -105,7 +118,7 @@ class CalendarProvider extends ChangeNotifier {
     _selectedDateIndex = date.day;
     _dragonHead = getDragonHead(_selectedDateIndex);
     _turns = getDirection(_dragonHead);
-    print(_turns);
+
     notifyListeners();
   }
 
