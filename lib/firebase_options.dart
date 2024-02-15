@@ -17,10 +17,7 @@ import 'package:flutter/foundation.dart'
 class DefaultFirebaseOptions {
   static FirebaseOptions get currentPlatform {
     if (kIsWeb) {
-      throw UnsupportedError(
-        'DefaultFirebaseOptions have not been configured for web - '
-        'you can reconfigure this by running the FlutterFire CLI again.',
-      );
+      return web;
     }
     switch (defaultTargetPlatform) {
       case TargetPlatform.android:
@@ -49,9 +46,18 @@ class DefaultFirebaseOptions {
     }
   }
 
+  static const FirebaseOptions web = FirebaseOptions(
+    apiKey: 'AIzaSyAoZD_l8kNDvpOZ_aHifkmu2RO8jAzNqAA',
+    appId: '1:947534421532:web:56cabbd95f891d36d009d9',
+    messagingSenderId: '947534421532',
+    projectId: 'burmese-calendar',
+    authDomain: 'burmese-calendar.firebaseapp.com',
+    storageBucket: 'burmese-calendar.appspot.com',
+  );
+
   static const FirebaseOptions android = FirebaseOptions(
     apiKey: 'AIzaSyA5La_DwHnF99b9T8WxWPnq5jx7IHQaWds',
-    appId: '1:947534421532:android:a041441e18cdfaf1d009d9',
+    appId: '1:947534421532:android:ef865e749efcf1e0d009d9',
     messagingSenderId: '947534421532',
     projectId: 'burmese-calendar',
     storageBucket: 'burmese-calendar.appspot.com',

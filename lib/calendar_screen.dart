@@ -35,9 +35,10 @@ class _CalendarLoadingScreenState extends State<CalendarLoadingScreen> {
     calendar = Provider.of<CalendarProvider>(context, listen: false);
 
     initializeCalendar().then((success) {
-      print('initialized first time');
       if (success) {
         _preloadImages();
+        // Close the connectivity stream
+        _connectivitySubscription.cancel();
       }
     });
     _connectivitySubscription = Connectivity()
@@ -46,11 +47,13 @@ class _CalendarLoadingScreenState extends State<CalendarLoadingScreen> {
       // Handle connectivity changes here
       if (result == ConnectivityResult.mobile ||
           result == ConnectivityResult.wifi) {
-        print("Reconnected Client");
         // Fetch data if network available
+
         initializeCalendar().then((success) {
           if (success) {
             _preloadImages();
+            // Close the connectivity Stream
+            _connectivitySubscription.cancel();
           }
         });
       }

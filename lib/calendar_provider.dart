@@ -44,7 +44,6 @@ class CalendarProvider extends ChangeNotifier {
         await database.initCalendar(onLoadingTextChange, onLoadingComplete);
     if (_months.length == 12) {
       await changeMonthTo(_selectedMonthIndex);
-
       return true;
     }
     return false;

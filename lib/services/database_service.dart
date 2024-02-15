@@ -34,7 +34,6 @@ class DatabaseHelper {
 
   Future<List<Month>> initCalendar(
       Function onLoadingTextChange, Function onLoadingComplete) async {
-    _prefs = await SharedPreferences.getInstance();
     final int index = _prefs.getInt('index') ?? 0;
     final int lastWriteYear = await getLastWriteTimestamp();
     final int currentYear = DateTime.now().year;
@@ -48,9 +47,9 @@ class DatabaseHelper {
           _prefs.setInt('index', i);
           if (!hasInternet) return [];
           Month month = months[i];
-
-          onLoadingTextChange("Fetching data for ${month.english}");
+          onLoadingTextChange("Fetching data for\n${month.english}");
           month.dayList = await calendarService.fetchDayList(month.english);
+          if (month.dayList.length < 27) return [];
           storeMonth(i, month);
         }
         // Store year of write operation
@@ -69,8 +68,6 @@ class DatabaseHelper {
             "Check your internet contenction\n and try again...");
       }
     }
-
-    print(months.length);
 
     return months;
   }

@@ -23,6 +23,44 @@
           "other_platform_oauth_client": []
         }
       }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:947534421532:android:ef865e749efcf1e0d009d9",
+        "android_client_info": {
+          "package_name": "com.llp_mm.myanmar_calendar"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA5La_DwHnF99b9T8WxWPnq5jx7IHQaWds"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:947534421532:android:974b8bd4160df00ad009d9",
+        "android_client_info": {
+          "package_name": "com.llpmm.burmese_calendar_admin.burmese_calendar_admin"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA5La_DwHnF99b9T8WxWPnq5jx7IHQaWds"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
     }
   ],
   "configuration_version": "1"
